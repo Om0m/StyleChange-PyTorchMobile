@@ -24,24 +24,41 @@ class MainActivity : AppCompatActivity() {
         imageViewInput.setImageBitmap(scaleChangeBitmap(bitmap, 2.0f))
         imageViewOutput.setImageBitmap(scaleChangeBitmap(bitmap, 2.0f))
 
+        fun transformation(modelName: String) {
+            val module = Module.load(assetFilePath(this, modelName))
 
-        val module = Module.load(assetFilePath(this, "mosaic.pt"))
-
-        val inputTensor = TensorImageUtils.bitmapToFloat32Tensor(
+            val inputTensor = TensorImageUtils.bitmapToFloat32Tensor(
                 bitmap,
                 TensorImageUtils.TORCHVISION_NORM_MEAN_RGB, TensorImageUtils.TORCHVISION_NORM_STD_RGB
-        )
-        val outputTensor = module.forward(IValue.from(inputTensor)).toTensor()
-        val outputFloatArray = outputTensor.dataAsFloatArray
-        val outputByteArray = outputFloatArray.foldIndexed(ByteArray(outputFloatArray.size)) { i, a, v -> a.apply { set(i, v.toByte()) }}
+            )
+            val outputTensor = module.forward(IValue.from(inputTensor)).toTensor()
+            val outputFloatArray = outputTensor.dataAsFloatArray
+            val outputByteArray = outputFloatArray.foldIndexed(ByteArray(outputFloatArray.size)) { i, a, v -> a.apply { set(i, v.toByte()) }}
 
-        val bmp = Bitmap.createBitmap(640, 428, Bitmap.Config.ALPHA_8)
-        val buffer: ByteBuffer = ByteBuffer.wrap(outputByteArray)
-        bmp.copyPixelsFromBuffer(buffer)
-
-        val button = findViewById<Button>(R.id.mosaicButton)
-        button.setOnClickListener {
+            val bmp = Bitmap.createBitmap(640, 428, Bitmap.Config.ALPHA_8)
+            val buffer: ByteBuffer = ByteBuffer.wrap(outputByteArray)
+            bmp.copyPixelsFromBuffer(buffer)
             imageViewOutput.setImageBitmap(scaleChangeBitmap(bmp, 2.0f))
+        }
+
+        val mosaic = findViewById<Button>(R.id.mosaicButton)
+        mosaic.setOnClickListener {
+            transformation("mosaic.pt")
+        }
+
+        val candy = findViewById<Button>(R.id.candyButton)
+        candy.setOnClickListener {
+            transformation("candy.pt")
+        }
+
+        val udnie = findViewById<Button>(R.id.udnieButton)
+        udnie.setOnClickListener {
+            transformation("udnie.pt")
+        }
+
+        val rain = findViewById<Button>(R.id.rainButton)
+        rain.setOnClickListener {
+            transformation("rain_princess.pt")
         }
     }
 }
