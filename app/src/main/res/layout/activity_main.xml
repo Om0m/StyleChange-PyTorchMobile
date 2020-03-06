@@ -31,6 +31,7 @@
         android:id="@+id/imageViewOutput"
         android:layout_width="wrap_content"
         android:layout_height="230dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:srcCompat="@drawable/akarenga"
         tools:layout_editor_absoluteX="0dp" />

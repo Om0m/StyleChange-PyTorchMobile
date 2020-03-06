@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import org.pytorch.IValue
@@ -20,25 +21,26 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val bitmap = BitmapFactory.decodeStream(assets.open("akarenga.jpg"))
-        imageViewInput.setImageBitmap(scaleChangeBitmap(bitmap, 2.0f))
-        imageViewOutput.setImageBitmap(scaleChangeBitmap(bitmap, 2.0f))
+        val inputBmp = BitmapFactory.decodeStream(assets.open("akarenga.jpg"))
+        imageViewInput.setImageBitmap(scaleChangeBitmap(inputBmp, 2.0f))
+        imageViewOutput.setImageBitmap(scaleChangeBitmap(inputBmp, 2.0f))
 
         fun transformation(modelName: String) {
             val module = Module.load(assetFilePath(this, modelName))
 
             val inputTensor = TensorImageUtils.bitmapToFloat32Tensor(
-                bitmap,
+                inputBmp,
                 TensorImageUtils.TORCHVISION_NORM_MEAN_RGB, TensorImageUtils.TORCHVISION_NORM_STD_RGB
             )
             val outputTensor = module.forward(IValue.from(inputTensor)).toTensor()
             val outputFloatArray = outputTensor.dataAsFloatArray
             val outputByteArray = outputFloatArray.foldIndexed(ByteArray(outputFloatArray.size)) { i, a, v -> a.apply { set(i, v.toByte()) }}
 
-            val bmp = Bitmap.createBitmap(640, 428, Bitmap.Config.ALPHA_8)
+            val outputBmp = Bitmap.createBitmap(inputBmp.width, inputBmp.height, Bitmap.Config.ALPHA_8)
             val buffer: ByteBuffer = ByteBuffer.wrap(outputByteArray)
-            bmp.copyPixelsFromBuffer(buffer)
-            imageViewOutput.setImageBitmap(scaleChangeBitmap(bmp, 2.0f))
+            outputBmp.copyPixelsFromBuffer(buffer)
+            imageViewOutput.setImageBitmap(scaleChangeBitmap(outputBmp, 2.0f))
+            imageViewOutput.scaleType = ImageView.ScaleType.CENTER
         }
 
         val mosaic = findViewById<Button>(R.id.mosaicButton)
